@@ -4,6 +4,8 @@ import sys
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QPushButton, QAction, QLineEdit, QMessageBox, QLabel, QRadioButton, QButtonGroup, QCheckBox
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
+import random
+
 
 class App(QMainWindow):
 
@@ -17,6 +19,10 @@ class App(QMainWindow):
         self.initUI()
         self.start_value = True
         self.choice = ""
+        self.random_list = ["ONCE!", "TWICE!", "GOOD JOB!", "TALK THAT TALK", "LIKE OOH AHH", "CHEER UP", "TT", 
+        "KNOCK KNOCK", "SIGNAL", "LIKEY", "HEART SHAKER", "WHAT IS LOVE?", "DANCE THE NIGHT AWAY", "YES OR YES", 
+        "FANCY", "FEEL SPECIAL", "MORE & MORE", "I CANT STOP ME", "Alcohol-Free", "SCIENTIST", "ONE IN A MILLION", "21:29", "LOVELY",
+        "0", "1", "2","3","4","5","6","7","8","9","10","20151020","20160505","20220712","20220826","20220624"]
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -94,20 +100,24 @@ class App(QMainWindow):
 
         self.textLabel = QLabel(self)
         self.textLabel.setText("回覆內容")
-        self.textLabel.move(38,155)
+        self.textLabel.move(38,165)
+        
 
         self.reply_text = QLineEdit(self)
-        self.reply_text.move(90,157)
+        self.reply_text.move(90,167)
         self.reply_text.resize(80,25)
         self.reply_text.setText("Be kind!")
 
         self.dislike = QCheckBox('倒讚功能', self)
         self.dislike.move(175,155)
-
+        self.random = QCheckBox('留言隨機穿插', self)
+        self.random.move(175,175)
+        self.random.setChecked(True)
 
         self.show()
     @pyqtSlot()
     def on_click_reply(self):
+        self.random_list.append(self.reply_text.text())
         self.start_value = True
         browser = webdriver.Chrome('./chromedriver')
         browser.maximize_window()
@@ -164,12 +174,19 @@ class App(QMainWindow):
                                 time.sleep(0.5)
                             comment_div.find_element_by_id("reply-button-end").click()
                             time.sleep(1)
+
                             comment_div.find_element_by_id("contenteditable-root").click()
                             time.sleep(0.5)
-                            comment_div.find_element_by_id("contenteditable-root").send_keys(self.reply_text.text())
+
+                            if self.random.isChecked():
+                                reply_text = self.random_list[random.randint(0, len(self.random_list)-1)]
+                                comment_div.find_element_by_id("contenteditable-root").send_keys(reply_text)
+                            else:
+                                comment_div.find_element_by_id("contenteditable-root").send_keys(self.reply_text.text())
                             time.sleep(0.5)
+
                             comment_div.find_element_by_id("submit-button").click()
-                            time.sleep(0.5)
+                            time.sleep(2.5)
                     except:
                         break
 
@@ -205,7 +222,7 @@ class App(QMainWindow):
         browser = webdriver.Chrome('./chromedriver')
         browser.maximize_window()
 
-        browser.get('https://gmail.com')
+        browser.get('https://accounts.google.com')
         browser.find_element_by_xpath('//*[@id="identifierId"]').send_keys(self.account_box.text())
         browser.find_element_by_xpath('//*[@id="identifierNext"]/div/button').click()
         time.sleep(5)
