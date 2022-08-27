@@ -88,12 +88,21 @@ class App(QMainWindow):
         self.report.move(38,122)
         self.report.clicked.connect(self.on_click_report)
 
-        self.reply = QPushButton('自動倒讚回復', self)
+        self.reply = QPushButton('自動倒讚回覆', self)
         self.reply.move(141,122)
         self.reply.clicked.connect(self.on_click_reply)
 
+        self.textLabel = QLabel(self)
+        self.textLabel.setText("回覆內容")
+        self.textLabel.move(38,155)
+
+        self.reply_text = QLineEdit(self)
+        self.reply_text.move(90,157)
+        self.reply_text.resize(80,25)
+        self.reply_text.setText("Be kind!")
+
         self.dislike = QCheckBox('倒讚功能', self)
-        self.dislike.move(158,155)
+        self.dislike.move(175,155)
 
 
         self.show()
@@ -157,7 +166,7 @@ class App(QMainWindow):
                             time.sleep(1)
                             comment_div.find_element_by_id("contenteditable-root").click()
                             time.sleep(0.5)
-                            comment_div.find_element_by_id("contenteditable-root").send_keys("Be Kind!")
+                            comment_div.find_element_by_id("contenteditable-root").send_keys(self.reply_text.text())
                             time.sleep(0.5)
                             comment_div.find_element_by_id("submit-button").click()
                             time.sleep(0.5)
