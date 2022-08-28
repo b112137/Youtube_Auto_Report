@@ -135,7 +135,7 @@ class App(QMainWindow):
         self.project_address.resize(300,25)
         
         try:
-            with open("address.txt", "r") as f:
+            with open("address.txt", "r", encoding="utf-8") as f:
                 self.chrome_address.setText(f.readline().replace("\n", ""))
                 self.project_address.setText(f.readline().replace("\n", ""))
         except:
@@ -154,13 +154,17 @@ class App(QMainWindow):
         project_address = self.project_address.text()
         project_address.replace("\\", "\\\\");
 
-        with open("address.txt", "w") as f:
+        with open("address.txt", "w", encoding="utf-8") as f:
             f.write(address + "\n")
             f.write(project_address)
             f.close()
 
-        print('start ' + address +' --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
-        os.system('start ' + address +' --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
+        print('cd /d "' + address.split("chrome.exe")[0] + '"')
+        os.system('cd /d "' + address.split("chrome.exe")[0] + '"')
+        print('start chrome.exe --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
+        os.system('start chrome.exe --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
+        # print('start ' + address +' --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
+        # os.system('start ' + address +' --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
 
         options = Options()
         options.add_experimental_option("debuggerAddress", "127.0.0.1:9527")
@@ -201,17 +205,17 @@ class App(QMainWindow):
                 browser.execute_script("window.scrollTo(0, 1000);")
 
                 comment_all = browser.find_element_by_id("comments").find_elements_by_id("comment")
-                print(comment_all)
 
                 for comment_div in comment_all:
                     try:
-                        text = comment_div.find_element_by_id("content-text").text
-                        emoji = comment_div.find_element_by_id("content-text").find_elements_by_class_name("emoji")
+                        text_element = comment_div.find_element_by_id("content-text")
+                        text = text_element.text
+                        emoji = text_element.find_elements_by_class_name("emoji")
                         
                         same_check = False
                         if len(text) > 5:
                             same_check = True
-                            for i in range(len(text)):
+                            for i in range(6):
                                 if i != 0:
                                     if text[i] != text[i-1]:
                                         same_check = False
@@ -222,7 +226,7 @@ class App(QMainWindow):
 
                         print(text_len, emoji_len)
 
-                        if emoji_len > 5 or same_check:
+                        if emoji_len > 5 or text_len <= 3 or same_check:
                             print("bad.")
                             if self.dislike.isChecked():
                                 comment_div.find_element_by_id("dislike-button").click()
@@ -286,13 +290,17 @@ class App(QMainWindow):
         project_address = self.project_address.text()
         project_address.replace("\\", "\\\\");
 
-        with open("address.txt", "w") as f:
+        with open("address.txt", "w", encoding="utf-8") as f:
             f.write(address + "\n")
             f.write(project_address)
             f.close()
 
-        print('start ' + address +' --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
-        os.system('start ' + address +' --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
+        print('cd /d "' + address.split("chrome.exe")[0] + '"')
+        os.system('cd /d "' + address.split("chrome.exe")[0] + '"')
+        print('start chrome.exe --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
+        os.system('start chrome.exe --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
+        # print('start ' + address +' --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
+        # os.system('start ' + address +' --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
 
         options = Options()
         options.add_experimental_option("debuggerAddress", "127.0.0.1:9527")
@@ -338,13 +346,14 @@ class App(QMainWindow):
 
                 for comment_div in comment_all:
                     try:
-                        text = comment_div.find_element_by_id("content-text").text
-                        emoji = comment_div.find_element_by_id("content-text").find_elements_by_class_name("emoji")
+                        text_element = comment_div.find_element_by_id("content-text")
+                        text = text_element.text
+                        emoji = text_element.find_elements_by_class_name("emoji")
                         
                         same_check = False
                         if len(text) > 5:
                             same_check = True
-                            for i in range(len(text)):
+                            for i in range(6):
                                 if i != 0:
                                     if text[i] != text[i-1]:
                                         same_check = False
@@ -355,7 +364,7 @@ class App(QMainWindow):
 
                         print(text_len, emoji_len)
 
-                        if emoji_len > 15 or same_check:
+                        if emoji_len > 15 or text_len <= 3 or same_check:
                             print("bad.")
                             comment_div.find_element_by_id("action-menu").find_element_by_id("button").click()
                             browser.find_element_by_xpath("//yt-formatted-string[text()='檢舉']").click()
