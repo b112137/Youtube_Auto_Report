@@ -1,11 +1,12 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 import time
 import sys
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QPushButton, QAction, QLineEdit, QMessageBox, QLabel, QRadioButton, QButtonGroup, QCheckBox
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 import random
-
+import os
 
 class App(QMainWindow):
 
@@ -15,14 +16,15 @@ class App(QMainWindow):
         self.left = 100
         self.top = 100
         self.width = 450
-        self.height = 200
+        self.height = 300
         self.initUI()
         self.start_value = True
         self.choice = ""
         self.random_list = ["ONCE!", "TWICE!", "GOOD JOB!", "TALK THAT TALK", "LIKE OOH AHH", "CHEER UP", "TT", 
         "KNOCK KNOCK", "SIGNAL", "LIKEY", "HEART SHAKER", "WHAT IS LOVE?", "DANCE THE NIGHT AWAY", "YES OR YES", 
         "FANCY", "FEEL SPECIAL", "MORE & MORE", "I CANT STOP ME", "Alcohol-Free", "SCIENTIST", "ONE IN A MILLION", "21:29", "LOVELY",
-        "0", "1", "2","3","4","5","6","7","8","9","10","20151020","20160505","20220712","20220826","20220624"]
+        "0", "1", "2","3","4","5","6","7","8","9","10","20151020","20160505","20220712","20220826","20220624", 
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -80,6 +82,7 @@ class App(QMainWindow):
         self.account_box = QLineEdit(self)
         self.account_box.move(90, 42)
         self.account_box.resize(150,25)
+        self.account_box.setEnabled(False)
 
         self.textLabel = QLabel(self)
         self.textLabel.setText("Password")
@@ -88,7 +91,7 @@ class App(QMainWindow):
         self.password_box = QLineEdit(self)
         self.password_box.move(90, 82)
         self.password_box.resize(150,25)
-
+        self.password_box.setEnabled(False)
 
         self.report = QPushButton('自動檢舉', self)
         self.report.move(38,122)
@@ -101,6 +104,14 @@ class App(QMainWindow):
         self.textLabel = QLabel(self)
         self.textLabel.setText("回覆內容")
         self.textLabel.move(38,165)
+
+        self.textLabel = QLabel(self)
+        self.textLabel.setText("Chrome位置")
+        self.textLabel.move(38,208)
+
+        self.textLabel = QLabel(self)
+        self.textLabel.setText("Project位置")
+        self.textLabel.move(38,243)
         
 
         self.reply_text = QLineEdit(self)
@@ -114,21 +125,61 @@ class App(QMainWindow):
         self.random.move(175,175)
         self.random.setChecked(True)
 
+        self.chrome_address = QLineEdit(self)
+        self.chrome_address.move(110,210)
+        self.chrome_address.resize(300,25)
+        self.chrome_address.setText("")
+        
+        self.project_address = QLineEdit(self)
+        self.project_address.move(110,245)
+        self.project_address.resize(300,25)
+        
+        try:
+            with open("address.txt", "r") as f:
+                self.chrome_address.setText(f.readline().replace("\n", ""))
+                self.project_address.setText(f.readline().replace("\n", ""))
+        except:
+            self.chrome_address.setText("")
+            self.project_address.setText("")
+
         self.show()
     @pyqtSlot()
     def on_click_reply(self):
         self.random_list.append(self.reply_text.text())
         self.start_value = True
-        browser = webdriver.Chrome('./chromedriver')
+        # browser = webdriver.Chrome('./chromedriver')
+
+        address = self.chrome_address.text()
+        address.replace("\\", "\\\\");
+        project_address = self.project_address.text()
+        project_address.replace("\\", "\\\\");
+
+        with open("address.txt", "w") as f:
+            f.write(address + "\n")
+            f.write(project_address)
+            f.close()
+
+        print('start ' + address +' --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
+        os.system('start ' + address +' --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
+
+        options = Options()
+        options.add_experimental_option("debuggerAddress", "127.0.0.1:9527")
+        browser = webdriver.Chrome(options=options)
+        
+
         browser.maximize_window()
 
-        browser.get('https://accounts.google.com')
-        browser.find_element_by_xpath('//*[@id="identifierId"]').send_keys(self.account_box.text())
-        browser.find_element_by_xpath('//*[@id="identifierNext"]/div/button').click()
-        time.sleep(5)
-        browser.find_element_by_xpath('//*[@id="password"]/div[1]/div/div[1]/input').send_keys(self.password_box.text())
-        browser.find_element_by_xpath('//*[@id="passwordNext"]/div/button').click()
+        browser.get('https://accounts.google.com/v3/signin/identifier?dsh=S-620481606%3A1661665226795324&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Dzh-TW%26next%3D%252F&hl=zh-TW&passive=false&service=youtube&uilel=0&flowName=GlifWebSignIn&flowEntry=AddSession')
+        # browser.find_element_by_xpath('//*[@id="identifierId"]').send_keys(self.account_box.text())
+        # browser.find_element_by_xpath('//*[@id="identifierNext"]/div/button').click()
+        # time.sleep(5)
+        # browser.find_element_by_xpath('//*[@id="password"]/div[1]/div/div[1]/input').send_keys(self.password_box.text())
+        # browser.find_element_by_xpath('//*[@id="passwordNext"]/div/button').click()
+        browser.implicitly_wait(120)
+        print(browser.find_element_by_id("logo-icon"))
+        browser.implicitly_wait(1)
 
+        time.sleep(1)
         browser.get('https://www.youtube.com/watch?v=k6jqx9kZgPM')
         time.sleep(2)
         for i in range(2):
@@ -144,9 +195,13 @@ class App(QMainWindow):
                 time.sleep(1)
                 button = browser.find_element_by_id("menu").find_element_by_xpath("//div[text()='由新到舊']")
                 browser.execute_script("arguments[0].click();", button)
-                time.sleep(2)
+                time.sleep(1)
+                browser.execute_script("window.scrollTo(0, 1000);")
+                time.sleep(1)
+                browser.execute_script("window.scrollTo(0, 1000);")
 
                 comment_all = browser.find_element_by_id("comments").find_elements_by_id("comment")
+                print(comment_all)
 
                 for comment_div in comment_all:
                     try:
@@ -167,7 +222,7 @@ class App(QMainWindow):
 
                         print(text_len, emoji_len)
 
-                        if emoji_len > 15 or same_check:
+                        if emoji_len > 5 or same_check:
                             print("bad.")
                             if self.dislike.isChecked():
                                 comment_div.find_element_by_id("dislike-button").click()
@@ -180,6 +235,9 @@ class App(QMainWindow):
 
                             if self.random.isChecked():
                                 reply_text = self.random_list[random.randint(0, len(self.random_list)-1)]
+                                reply_text += self.random_list[random.randint(0, len(self.random_list)-1)]
+                                reply_text += self.random_list[random.randint(0, len(self.random_list)-1)]
+
                                 comment_div.find_element_by_id("contenteditable-root").send_keys(reply_text)
                             else:
                                 comment_div.find_element_by_id("contenteditable-root").send_keys(self.reply_text.text())
@@ -188,12 +246,14 @@ class App(QMainWindow):
                             comment_div.find_element_by_id("submit-button").click()
                             time.sleep(2.5)
                     except:
+                        print("Error")
                         break
 
-                element = browser.find_element_by_id("sort-menu")
-                browser.execute_script("arguments[0].scrollIntoView();", element)
+                # element = browser.find_element_by_id("sort-menu")
+                # browser.execute_script("arguments[0].scrollIntoView();", element)
 
             except:
+                print("Error2")
                 break
 
     @pyqtSlot()
@@ -219,15 +279,39 @@ class App(QMainWindow):
         print(self.choice)
 
         self.start_value = True
-        browser = webdriver.Chrome('./chromedriver')
+        # browser = webdriver.Chrome('./chromedriver')
+
+        address = self.chrome_address.text()
+        address.replace("\\", "\\\\");
+        project_address = self.project_address.text()
+        project_address.replace("\\", "\\\\");
+
+        with open("address.txt", "w") as f:
+            f.write(address + "\n")
+            f.write(project_address)
+            f.close()
+
+        print('start ' + address +' --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
+        os.system('start ' + address +' --remote-debugging-port=9527 --user-data-dir="' + project_address + '"')
+
+        options = Options()
+        options.add_experimental_option("debuggerAddress", "127.0.0.1:9527")
+        browser = webdriver.Chrome(options=options)
+
         browser.maximize_window()
 
-        browser.get('https://accounts.google.com')
-        browser.find_element_by_xpath('//*[@id="identifierId"]').send_keys(self.account_box.text())
-        browser.find_element_by_xpath('//*[@id="identifierNext"]/div/button').click()
-        time.sleep(5)
-        browser.find_element_by_xpath('//*[@id="password"]/div[1]/div/div[1]/input').send_keys(self.password_box.text())
-        browser.find_element_by_xpath('//*[@id="passwordNext"]/div/button').click()
+        browser.get('https://accounts.google.com/v3/signin/identifier?dsh=S-620481606%3A1661665226795324&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Dzh-TW%26next%3D%252F&hl=zh-TW&passive=false&service=youtube&uilel=0&flowName=GlifWebSignIn&flowEntry=AddSession')
+        # browser.find_element_by_xpath('//*[@id="identifierId"]').send_keys(self.account_box.text())
+        # browser.find_element_by_xpath('//*[@id="identifierNext"]/div/button').click()
+        # time.sleep(5)
+        # browser.find_element_by_xpath('//*[@id="password"]/div[1]/div/div[1]/input').send_keys(self.password_box.text())
+        # browser.find_element_by_xpath('//*[@id="passwordNext"]/div/button').click()
+
+        browser.implicitly_wait(120)
+        print(browser.find_element_by_id("logo-icon"))
+        browser.implicitly_wait(1)
+
+        time.sleep(1)
 
         browser.get('https://www.youtube.com/watch?v=k6jqx9kZgPM')
         time.sleep(2)
@@ -245,7 +329,10 @@ class App(QMainWindow):
                 time.sleep(1)
                 button = browser.find_element_by_id("menu").find_element_by_xpath("//div[text()='由新到舊']")
                 browser.execute_script("arguments[0].click();", button)
-                time.sleep(2)
+                time.sleep(1)
+                browser.execute_script("window.scrollTo(0, 1000);")
+                time.sleep(1)
+                browser.execute_script("window.scrollTo(0, 1000);")
 
                 comment_all = browser.find_element_by_id("comments").find_elements_by_id("comment")
 
